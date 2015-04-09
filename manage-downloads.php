@@ -3,7 +3,7 @@
 encoding: utf-8
 vim: ft=php noexpandtab shiftwidth=4 tabstop=4
 Plugin Name: Manage Downloads
-Version: 0.1
+Version: 0.2.0
 Description: Manages download
 Author: Digitalcube Inc.
 Author URI: http://digitalcube.jp/
