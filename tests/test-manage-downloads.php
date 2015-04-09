@@ -162,7 +162,7 @@ class Manage_DownloadsTest extends WP_UnitTestCase
 
 	/**
 	 * @test
-     */
+	 */
 	function get_count()
 	{
 		$post_id_01 = $this->factory->post->create( array( 'post_type' => Manage_Downloads::get_post_type() ) );
