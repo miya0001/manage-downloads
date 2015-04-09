@@ -262,8 +262,11 @@ class Manage_Downloads
 		$id_array = preg_split( "/,/", $ids );
 		$count = 0;
 		foreach ( $id_array as $id ) {
-			$n = intval( get_post_meta( $id, 'download-item-counter', true ) );
-			$count = $count + $n;
+			$id = intval( trim( $id ) );
+			if ( $id ) {
+				$n = intval( get_post_meta( $id, 'download-item-counter', true ) );
+				$count = $count + $n;
+			}
 		}
 
 		return intval( $count );
