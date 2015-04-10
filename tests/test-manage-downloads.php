@@ -97,7 +97,7 @@ class Manage_DownloadsTest extends WP_UnitTestCase
 		) );
 
 		$this->assertSame(
-			'<a href="http://example.org/download/' . $post_id . '">Download!!</a>',
+			'<a id="manage-downloads-' . $post_id . '" href="http://example.org/download/' . $post_id . '" onClick="">Download!!</a>',
 			do_shortcode( '[download_link id="' . $post_id . '"]' )
 		);
 
@@ -117,6 +117,28 @@ class Manage_DownloadsTest extends WP_UnitTestCase
 		$this->assertSame(
 			'',
 			do_shortcode( '[download_link id=""]' )
+		);
+
+		// test with filter
+		add_filter( 'manage-downloads-link-html', function( $link_html, $post_id, $url, $onclick, $title ){
+			return sprintf(
+				'<a class="manage-downloads-%1$s" href="%2$s" onClick="%3$s">%4$s</a>',
+				esc_attr( $post_id ),
+				esc_url( $url ),
+				$onclick,
+				$title
+			);
+		}, 10, 5 );
+
+		$this->assertSame(
+			'<a class="manage-downloads-' . $post_id . '" href="http://example.org/download/' . $post_id . '" onClick="">Download!!</a>',
+			do_shortcode( '[download_link id="' . $post_id . '"]' )
+		);
+
+		Manage_Downloads::set_click_action( $post_id, "awesome.action( 'Wow' );" );
+		$this->assertSame(
+			'<a class="manage-downloads-' . $post_id . '" href="http://example.org/download/' . $post_id . '" onClick="awesome.action( \'Wow\' );">Download!!</a>',
+			do_shortcode( '[download_link id="' . $post_id . '"]' )
 		);
 	}
 

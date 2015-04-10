@@ -131,10 +131,11 @@ class Manage_Downloads
 		 * Save post_meta
 		 */
 		if ( self::get_post_type() === $p->post_type ) {
-			if ( isset( $_POST['download-item-url'] ) && trim( $_POST['download-item-url'] ) ) {
-				update_post_meta( $id, 'manage-downloads-item-url', trim( $_POST['download-item-url'] ) );
-			} else {
-				delete_post_meta( $id, 'manage-downloads-item-url' );
+			if ( isset( $_POST['download-item-url'] ) ) {
+				self::set_download_url( $id, trim( $_POST['download-item-url'] ) );
+			}
+			if ( isset( $_POST['click-action'] ) ) {
+				self::set_click_action( $id, trim( $_POST['click-action'] ) );
 			}
 		}
 	}
@@ -160,10 +161,19 @@ class Manage_Downloads
 		), $atts );
 
 		if ( get_post( intval( $atts['id'] ) ) ) {
-			return sprintf(
-				'<a href="%s">%s</a>',
-				esc_url( self::get_permalink( $atts['id'] ) ),
-				esc_html( get_the_title( $atts['id'] ) )
+			return apply_filters(
+				'manage-downloads-link-html',
+				sprintf(
+					'<a id="manage-downloads-%1$s" href="%2$s" onClick="%3$s">%4$s</a>',
+					$atts['id'],
+					esc_url( self::get_permalink( $atts['id'] ) ),
+					self::get_click_action( $atts['id'] ),
+					esc_html( get_the_title( $atts['id'] ) )
+				),
+				$atts['id'],
+				self::get_permalink( $atts['id'] ),
+				self::get_click_action( $atts['id'] ),
+				get_the_title( $atts['id'] )
 			);
 		}
 	}
@@ -174,6 +184,15 @@ class Manage_Downloads
 			'manage-downloads-url',
 			__( 'URL', 'manage-downloads' ),
 			array( $this, 'get_url_meta_box' ),
+			self::get_post_type(),
+			'normal',
+			'low'
+		);
+
+		add_meta_box(
+			'manage-downloads-click-action',
+			__( 'OnClick', 'manage-downloads' ),
+			array( $this, 'onclick_meta_box' ),
 			self::get_post_type(),
 			'normal',
 			'low'
@@ -217,11 +236,21 @@ class Manage_Downloads
 
 	public function get_url_meta_box( $post )
 	{
-		$url = Manage_Downloads::get_download_url( $post->ID, true );
+		$url = Manage_Downloads::get_download_url( $post->ID );
 
 		printf(
 			'<input type="text" name="download-item-url" value="%s" style="width: 100%%;" placeholder="http://" />',
 			esc_url( $url )
+		);
+	}
+
+	public function onclick_meta_box( $post )
+	{
+		$url = Manage_Downloads::get_click_action( $post->ID );
+
+		printf(
+			'<input type="text" name="click-action" value="%s" style="width: 100%%;" />',
+			esc_attr( Manage_Downloads::get_click_action( $post->ID ) )
 		);
 	}
 
@@ -278,5 +307,20 @@ class Manage_Downloads
 		update_post_meta( $id, 'download-item-counter', $count );
 
 		return $count;
+	}
+
+	public static function get_click_action( $id )
+	{
+		if ( get_post( intval( $id ) ) ) {
+			return get_post_meta( intval( $id ), 'manage-downloads-click-action', true );
+		}
+	}
+
+	public static function set_click_action( $id, $action )
+	{
+		if ( get_post( intval( $id ) ) ) {
+			update_post_meta( intval( $id ), 'manage-downloads-click-action', $action );
+			return true;
+		}
 	}
 }
